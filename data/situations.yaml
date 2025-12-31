@@ -1,14 +1,16 @@
 classroom:
-  prompt: classroom, school desk, indoors, window
-  extra: sitting, looking at viewer, school uniform
+  prompt:
+    - sitting, looking at viewer, school uniform
+    - classroom, school desk, indoors, window
   exclude:
     - top
     - bottom
     - accessory
 
 beach:
-  prompt: beach, ocean, sunny, outdoors, blue sky
-  extra: bikini, barefoot, standing, wet
+  prompt:
+    - bikini, barefoot, standing, wet
+    - beach, ocean, sunny, outdoors, blue sky
   exclude:
     - top
     - bottom
@@ -16,8 +18,9 @@ beach:
     - accessory
 
 sleeping:
-  prompt: bedroom, bed, pillow, night, indoors
-  extra: sleeping, lying, closed eyes, pajamas
+  prompt:
+    - sleeping, lying, closed eyes, pajamas
+    - bedroom, bed, pillow, night, indoors
   exclude:
     - eye
     - top
@@ -26,8 +29,9 @@ sleeping:
     - accessory
 
 bath:
-  prompt: onsen, steam, water, rock, outdoors
-  extra: nude, wet, towel on head, sitting
+  prompt:
+    - nude, wet, towel on head, sitting
+    - onsen, steam, water, rock, outdoors
   exclude:
     - top
     - bottom
@@ -35,8 +39,9 @@ bath:
     - accessory
 
 bunny:
-  prompt: casino, spotlight, indoors, stage
-  extra: bunny suit, rabbit ears, pantyhose, high heels, wrist cuffs, standing
+  prompt:
+    - bunny suit, rabbit ears, pantyhose, high heels, wrist cuffs, standing
+    - casino, spotlight, indoors, stage
   exclude:
     - top
     - bottom
@@ -44,16 +49,18 @@ bunny:
     - accessory
 
 maid:
-  prompt: mansion, victorian interior, indoors
-  extra: maid dress, maid headdress, apron, standing, tray
+  prompt:
+    - maid dress, maid headdress, apron, standing, tray
+    - mansion, victorian interior, indoors
   exclude:
     - top
     - bottom
     - accessory
 
 casual:
-  prompt: city street, outdoors, daytime
-  extra: t-shirt, jeans, sneakers, walking
+  prompt:
+    - t-shirt, jeans, sneakers, walking
+    - city street, outdoors, daytime
   exclude:
     - top
     - bottom

@@ -102,8 +102,9 @@ reimu:
 
 ```yaml
 beach:
-  prompt: beach, ocean, sunny, outdoors, blue sky
-  extra: bikini, barefoot, standing, wet
+  prompt:
+    - bikini, barefoot, standing, wet
+    - beach, ocean, sunny, outdoors, blue sky
   exclude:
     - top
     - bottom
@@ -113,23 +114,26 @@ beach:
 
 **パラメータ:**
 
-- `prompt`: 背景・環境のプロンプト
-- `extra`: この状況特有の服装・ポーズ・アイテム
+- `prompt`: 状況のプロンプト（文字列または配列）
+  - 文字列: `prompt: bikini, barefoot, beach, ocean`
+  - 配列: 役割ごとに分けられる（1行目: 服装・ポーズ、2行目: 背景など）
 - `exclude`: 除外するキャラクター要素のリスト
 
 ### 矛盾防止の仕組み
 
-`exclude` で指定した要素はキャラクター定義から除外され、代わりに `extra` の内容が使用されます。
+`exclude` で指定した要素はキャラクター定義から除外され、代わりに `prompt` の内容が使用されます。
 
 **例: beach (ビーチ)**
 
 - 除外: `top`, `bottom`, `shoes`, `accessory` (通常の服装)
 - 追加: `bikini, barefoot, standing, wet` (ビーチに適した服装)
+- 背景: `beach, ocean, sunny, outdoors, blue sky`
 
 **例: classroom (教室)**
 
 - 除外: `top`, `bottom`, `accessory` (通常の服装)
-- 追加: `school uniform, sitting, looking at viewer` (制服姿)
+- 追加: `sitting, looking at viewer, school uniform` (制服姿)
+- 背景: `classroom, school desk, indoors, window`
 
 ## プリセット状況
 
@@ -165,8 +169,19 @@ your_character:
 
 ```yaml
 your_situation:
-  prompt: your background tags
-  extra: your outfit and pose tags
+  prompt:
+    - your outfit and pose tags
+    - your background tags
+  exclude:
+    - top
+    - bottom
+```
+
+または、シンプルに文字列で:
+
+```yaml
+your_situation:
+  prompt: your outfit, pose, and background tags
   exclude:
     - top
     - bottom

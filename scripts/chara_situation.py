@@ -111,10 +111,17 @@ class CharaSituationScript(scripts.Script):
         # シチュエーションプロンプトの組み立て
         situation_parts = []
         if situation:
+            # extraとpromptの両方をサポート(後方互換性のため)
             if situation.get("extra"):
                 situation_parts.append(situation["extra"])
+
             if situation.get("prompt"):
-                situation_parts.append(situation["prompt"])
+                prompt_value = situation["prompt"]
+                # promptが配列の場合は結合、文字列の場合はそのまま
+                if isinstance(prompt_value, list):
+                    situation_parts.extend(prompt_value)
+                else:
+                    situation_parts.append(prompt_value)
 
         situation_prompt = ", ".join(situation_parts) if situation_parts else ""
 
