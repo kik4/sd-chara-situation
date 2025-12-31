@@ -41,12 +41,21 @@ class CharaSituationScript(scripts.Script):
         process_batchはseed値が確定した後に呼ばれるため、
         -1が実際のseed値に置き換わった状態でプロンプトを展開できる
         """
-        for i, prompt in enumerate(p.prompts):
+        for i in range(len(p.prompts)):
             # バッチ処理の場合、各プロンプトに対応するseedを取得
             seed = p.all_seeds[i] if i < len(p.all_seeds) else p.all_seeds[0]
-            expanded = self.expand_prompt(prompt, seed)
+
+            # all_promptsを元に展開する（LORAタグなどが含まれている）
+            # p.promptsはWebUIによってLORAタグが抽出された後のプロンプト
+            if i < len(p.all_prompts):
+                source_prompt = p.all_prompts[i]
+            else:
+                source_prompt = p.prompts[i]
+
+            expanded = self.expand_prompt(source_prompt, seed)
+
+            # 両方を更新
             p.prompts[i] = expanded
-            # all_promptsも更新して画像メタデータに反映
             if i < len(p.all_prompts):
                 p.all_prompts[i] = expanded
     
