@@ -121,19 +121,25 @@ beach:
 
 ### 矛盾防止の仕組み
 
-`exclude` で指定した要素はキャラクター定義から除外され、代わりに `prompt` の内容が使用されます。
+各状況で `exclude` を指定することで、キャラクター定義の特定の要素を除外できます。除外した要素は出力されず、状況の `prompt` で定義した内容が使用されます。
 
 **例: beach (ビーチ)**
 
-- 除外: `top`, `bottom`, `shoes`, `accessory` (通常の服装)
-- 追加: `bikini, barefoot, standing, wet` (ビーチに適した服装)
-- 背景: `beach, ocean, sunny, outdoors, blue sky`
+キャラクター定義から除外:
+- `top`, `bottom`, `shoes`, `accessory` (通常の服装と相性が悪いため除外)
+
+状況の `prompt` で追加:
+- `bikini, barefoot, standing, wet` (ビーチに適した服装・ポーズ)
+- `beach, ocean, sunny, outdoors, blue sky` (背景)
 
 **例: classroom (教室)**
 
-- 除外: `top`, `bottom`, `accessory` (通常の服装)
-- 追加: `sitting, looking at viewer, school uniform` (制服姿)
-- 背景: `classroom, school desk, indoors, window`
+キャラクター定義から除外:
+- `top`, `bottom`, `accessory` (制服に置き換えるため除外)
+
+状況の `prompt` で追加:
+- `sitting, looking at viewer, school uniform` (制服姿・ポーズ)
+- `classroom, school desk, indoors, window` (背景)
 
 ## プリセット状況
 
@@ -190,8 +196,9 @@ your_situation:
 ## 動作仕様
 
 - YAML ファイルは毎回の生成時に読み込まれるため、編集後すぐに反映されます(WebUI の再起動不要)
-- 生成されたプロンプトはコンソールに出力されます
+- 選択されたキャラクターと状況、展開されたプロンプトがコンソールにログとして出力されます
 - バッチ生成にも対応しています
+- 画像メタデータには展開後の完全なプロンプトが記録されます
 
 ## ライセンス
 
