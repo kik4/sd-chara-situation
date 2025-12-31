@@ -46,32 +46,36 @@ class CharaSituationScript(scripts.Script):
     
     def process(self, p):
         self.load_data()
-        
+
         for i, prompt in enumerate(p.all_prompts):
-            p.all_prompts[i] = self.expand_prompt(prompt)
+            # バッチ処理の場合、各プロンプトに対応するseedを取得
+            seed = p.all_seeds[i] if i < len(p.all_seeds) else p.seed
+            p.all_prompts[i] = self.expand_prompt(prompt, seed)
     
-    def expand_prompt(self, prompt):
+    def expand_prompt(self, prompt, seed):
         # @chara:name を検出
         chara_match = re.search(r'@chara:(\w+)', prompt)
         if not chara_match:
             return prompt
-        
+
         chara_name = chara_match.group(1)
         if chara_name not in self.characters:
             print(f"[CharaSituation] Unknown character: {chara_name}")
             return prompt
-        
+
         chara = self.characters[chara_name]
-        
+
         # @situation:name または @situation:random を検出
         sit_match = re.search(r'@situation:(\w+)', prompt)
         situation = None
         sit_name = ""
-        
+
         if sit_match:
             sit_name = sit_match.group(1)
             if sit_name == "random":
-                sit_name = random.choice(list(self.situations.keys()))
+                # seedを使って決定的にランダム選択
+                rng = random.Random(seed)
+                sit_name = rng.choice(list(self.situations.keys()))
             
             if sit_name in self.situations:
                 situation = self.situations[sit_name]
