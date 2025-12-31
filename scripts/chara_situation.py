@@ -96,12 +96,32 @@ class CharaSituationScript(scripts.Script):
                 'entry': entry
             })
 
-        # Step 2: すべてのシチュエーション定義(excludeフィールドを持つもの)を収集
+        # Step 2: すべてのシチュエーション定義(exclude/includeフィールドを持つもの)を収集
         all_excludes = []
+        all_includes = []
+        has_include = False
+        has_exclude = False
+
         for item in tag_data:
             entry = item['entry']
-            if isinstance(entry, dict) and 'exclude' in entry:
-                all_excludes.extend(entry.get('exclude', []))
+            if isinstance(entry, dict):
+                # excludeとincludeの同時指定をチェック（同一エントリ内）
+                if 'exclude' in entry and 'include' in entry:
+                    print(f"[CharaSituation] ERROR: Cannot specify both 'exclude' and 'include' in {item['filename']}:{item['key']}")
+                    continue
+
+                if 'exclude' in entry:
+                    all_excludes.extend(entry.get('exclude', []))
+                    has_exclude = True
+                elif 'include' in entry:
+                    all_includes.extend(entry.get('include', []))
+                    has_include = True
+
+        # includeとexcludeの混在チェック（複数のシチュエーション間）
+        if has_include and has_exclude:
+            print(f"[CharaSituation] ERROR: Cannot mix 'include' and 'exclude' across multiple situations")
+            # エラー時はタグを展開せずに元のプロンプトを返す
+            return prompt
 
         # Step 3: 各タグを展開
         result = prompt
@@ -114,12 +134,15 @@ class CharaSituationScript(scripts.Script):
             key = item['key']
 
             # エントリがシチュエーション定義かキャラクター定義かを判定
-            if isinstance(entry, dict) and 'exclude' in entry:
+            if isinstance(entry, dict) and ('exclude' in entry or 'include' in entry):
                 # シチュエーション定義の場合
                 expanded = self.expand_situation(entry)
             else:
-                # キャラクター定義の場合 - all_excludesを使用
-                expanded = self.expand_character(entry, all_excludes)
+                # キャラクター定義の場合 - all_excludes/all_includesを使用
+                if has_include:
+                    expanded = self.expand_character_with_include(entry, all_includes)
+                else:
+                    expanded = self.expand_character_with_exclude(entry, all_excludes)
 
             expanded_tags.append(f"{filename}:{key}")
 
@@ -137,16 +160,30 @@ class CharaSituationScript(scripts.Script):
 
         return result
 
-    def expand_character(self, chara, excludes):
-        """キャラクター定義を展開"""
+    def expand_character_with_exclude(self, chara, excludes):
+        """キャラクター定義を展開（exclude方式）"""
         if not isinstance(chara, dict):
             return str(chara)
 
         chara_parts = []
 
-        # キャラの各タグを処理
+        # キャラの各タグを処理（excludeに含まれないものを出力）
         for key, value in chara.items():
             if key not in excludes and value:
+                chara_parts.append(str(value))
+
+        return ", ".join(chara_parts)
+
+    def expand_character_with_include(self, chara, includes):
+        """キャラクター定義を展開（include方式）"""
+        if not isinstance(chara, dict):
+            return str(chara)
+
+        chara_parts = []
+
+        # キャラの各タグを処理（includeに含まれるもののみ出力）
+        for key, value in chara.items():
+            if key in includes and value:
                 chara_parts.append(str(value))
 
         return ", ".join(chara_parts)

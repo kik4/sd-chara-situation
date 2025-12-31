@@ -143,25 +143,56 @@ beach:
 
 ### 矛盾防止の仕組み
 
-各状況で `exclude` を指定することで、キャラクター定義の特定の要素を除外できます。除外した要素は出力されず、状況の `prompt` で定義した内容が使用されます。
+状況定義で `exclude` または `include` を指定することで、キャラクター定義の要素を制御できます。
+
+#### exclude（除外方式）
+
+キャラクター定義の特定の要素を除外します。除外した要素以外はすべて出力されます。
 
 **例: beach (ビーチ)**
 
-キャラクター定義から除外:
-- `top`, `bottom`, `shoes`, `accessory` (通常の服装と相性が悪いため除外)
+```yaml
+beach:
+  prompt:
+    - bikini, barefoot, standing, wet
+    - beach, ocean, sunny, outdoors, blue sky
+  exclude:
+    - top
+    - bottom
+    - shoes
+    - accessory
+```
 
-状況の `prompt` で追加:
-- `bikini, barefoot, standing, wet` (ビーチに適した服装・ポーズ)
-- `beach, ocean, sunny, outdoors, blue sky` (背景)
+- キャラクター定義から除外: `top`, `bottom`, `shoes`, `accessory`
+- 状況の `prompt` で追加: `bikini, barefoot, standing, wet` など
 
-**例: classroom (教室)**
+#### include（包含方式）
 
-キャラクター定義から除外:
-- `top`, `bottom`, `accessory` (制服に置き換えるため除外)
+キャラクター定義の特定の要素のみを含めます。指定した要素以外はすべて除外されます。
 
-状況の `prompt` で追加:
-- `sitting, looking at viewer, school uniform` (制服姿・ポーズ)
-- `classroom, school desk, indoors, window` (背景)
+**例: silhouette (シルエット)**
+
+```yaml
+silhouette:
+  prompt: silhouette, backlight, dramatic lighting
+  include:
+    - base
+    - body
+```
+
+- キャラクター定義から含める: `base`, `body` のみ
+- その他（`hair`, `eye`, `top`, `bottom` など）は除外
+
+**重要な制限:**
+- 同一シチュエーション内で `exclude` と `include` を同時に指定できません
+- 複数のシチュエーションを組み合わせる場合、すべて `exclude` またはすべて `include` で統一する必要があります
+- `include` と `exclude` を混在させるとエラーになり、プロンプトは展開されません
+
+**例（エラーになる組み合わせ）:**
+```
+@characters:reimu @situations:beach @silhouette:dark
+```
+※ `beach` が `exclude` を使用し、`silhouette` が `include` を使用している場合
 
 ## プリセット状況
 
