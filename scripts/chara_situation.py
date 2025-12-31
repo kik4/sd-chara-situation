@@ -12,31 +12,23 @@ except ImportError:
 
 
 class CharaSituationScript(scripts.Script):
-    
+
     def __init__(self):
         # このスクリプトファイルの場所から拡張機能のルートを特定
         script_dir = os.path.dirname(os.path.abspath(__file__))
         extension_dir = os.path.dirname(script_dir)  # scriptsの親ディレクトリ
         self.data_dir = os.path.join(extension_dir, "data")
-        self.characters = {}
-        self.situations = {}
-    
-    def load_data(self):
-        """YAMLファイルを読み込む（毎回読み込んで編集を即反映）"""
-        chars_path = os.path.join(self.data_dir, "characters.yaml")
-        sits_path = os.path.join(self.data_dir, "situations.yaml")
 
-        if os.path.exists(chars_path):
-            with open(chars_path, 'r', encoding='utf-8') as f:
-                self.characters = yaml.safe_load(f) or {}
-        else:
-            print(f"[CharaSituation] ERROR: characters.yaml not found at {chars_path}")
+    def load_yaml(self, filename):
+        """指定されたYAMLファイルを読み込む（毎回読み込んで編集を即反映）"""
+        yaml_path = os.path.join(self.data_dir, f"{filename}.yaml")
 
-        if os.path.exists(sits_path):
-            with open(sits_path, 'r', encoding='utf-8') as f:
-                self.situations = yaml.safe_load(f) or {}
+        if os.path.exists(yaml_path):
+            with open(yaml_path, 'r', encoding='utf-8') as f:
+                return yaml.safe_load(f) or {}
         else:
-            print(f"[CharaSituation] ERROR: situations.yaml not found at {sits_path}")
+            print(f"[CharaSituation] WARNING: {filename}.yaml not found at {yaml_path}")
+            return {}
     
     def title(self):
         return "Chara Situation"
@@ -49,8 +41,6 @@ class CharaSituationScript(scripts.Script):
         process_batchはseed値が確定した後に呼ばれるため、
         -1が実際のseed値に置き換わった状態でプロンプトを展開できる
         """
-        self.load_data()
-
         for i, prompt in enumerate(p.prompts):
             # バッチ処理の場合、各プロンプトに対応するseedを取得
             seed = p.all_seeds[i] if i < len(p.all_seeds) else p.all_seeds[0]
@@ -64,78 +54,115 @@ class CharaSituationScript(scripts.Script):
         # seedを使って決定的な乱数生成器を作成
         rng = random.Random(seed)
 
-        # @chara:name または @chara:random を検出
-        chara_match = re.search(r'@chara:(\w+)', prompt)
-        if not chara_match:
+        # @filename:key の形式をすべて検出
+        tag_pattern = r'@(\w+):(\w+)'
+        matches = list(re.finditer(tag_pattern, prompt))
+
+        if not matches:
             return prompt
 
-        chara_name = chara_match.group(1)
+        # Step 1: すべてのタグを解析して、データを読み込む
+        tag_data = []
+        for match in matches:
+            filename = match.group(1)
+            key = match.group(2)
+            full_tag = match.group(0)
 
-        # キャラクターのランダム選択
-        if chara_name == "random":
-            chara_name = rng.choice(list(self.characters.keys()))
+            # YAMLファイルを読み込む
+            data = self.load_yaml(filename)
 
-        if chara_name not in self.characters:
-            print(f"[CharaSituation] Unknown character: {chara_name}")
-            return prompt
+            if not data:
+                print(f"[CharaSituation] File not found or empty: {filename}.yaml")
+                continue
 
-        chara = self.characters[chara_name]
+            # random キーの処理
+            if key == "random":
+                if data:
+                    key = rng.choice(list(data.keys()))
+                else:
+                    print(f"[CharaSituation] No keys available in {filename}.yaml for random selection")
+                    continue
 
-        # @situation:name または @situation:random を検出
-        sit_match = re.search(r'@situation:(\w+)', prompt)
-        situation = None
-        sit_name = ""
+            # キーが存在するか確認
+            if key not in data:
+                print(f"[CharaSituation] Key '{key}' not found in {filename}.yaml")
+                continue
 
-        if sit_match:
-            sit_name = sit_match.group(1)
-            if sit_name == "random":
-                # 同じrngを使って次の選択を行う
-                sit_name = rng.choice(list(self.situations.keys()))
-            
-            if sit_name in self.situations:
-                situation = self.situations[sit_name]
+            entry = data[key]
+            tag_data.append({
+                'full_tag': full_tag,
+                'filename': filename,
+                'key': key,
+                'entry': entry
+            })
+
+        # Step 2: すべてのシチュエーション定義(excludeフィールドを持つもの)を収集
+        all_excludes = []
+        for item in tag_data:
+            entry = item['entry']
+            if isinstance(entry, dict) and 'exclude' in entry:
+                all_excludes.extend(entry.get('exclude', []))
+
+        # Step 3: 各タグを展開
+        result = prompt
+        expanded_tags = []
+
+        for item in tag_data:
+            entry = item['entry']
+            full_tag = item['full_tag']
+            filename = item['filename']
+            key = item['key']
+
+            # エントリがシチュエーション定義かキャラクター定義かを判定
+            if isinstance(entry, dict) and 'exclude' in entry:
+                # シチュエーション定義の場合
+                expanded = self.expand_situation(entry)
             else:
-                print(f"[CharaSituation] Unknown situation: {sit_name}")
-        
-        # キャラクタープロンプトの組み立て
-        chara_parts = []
-        exclude = situation.get("exclude", []) if situation else []
+                # キャラクター定義の場合 - all_excludesを使用
+                expanded = self.expand_character(entry, all_excludes)
 
-        # キャラの各タグを処理
-        for key, value in chara.items():
-            if key not in exclude and value:
-                chara_parts.append(value)
+            expanded_tags.append(f"{filename}:{key}")
 
-        chara_prompt = ", ".join(chara_parts)
-
-        # シチュエーションプロンプトの組み立て
-        situation_parts = []
-        if situation and situation.get("prompt"):
-            prompt_value = situation["prompt"]
-            # promptが配列の場合は結合、文字列の場合はそのまま
-            if isinstance(prompt_value, list):
-                situation_parts.extend(prompt_value)
-            else:
-                situation_parts.append(prompt_value)
-
-        situation_prompt = ", ".join(situation_parts) if situation_parts else ""
-
-        # @chara:xxx を実際のキャラクタープロンプトに置換
-        result = re.sub(r'@chara:\w+', chara_prompt, prompt)
-
-        # @situation:xxx を実際のシチュエーションプロンプトに置換
-        if situation_prompt:
-            result = re.sub(r'@situation:\w+', situation_prompt, result)
-        else:
-            # situationが指定されていない場合は@situation:xxxを削除
-            result = re.sub(r'@situation:\w+', '', result)
+            # タグを展開された内容で置換
+            result = result.replace(full_tag, expanded, 1)
 
         # 連続カンマやスペースを整理
         result = re.sub(r',\s*,+', ',', result)
         result = re.sub(r'^\s*,\s*', '', result)  # 先頭のカンマを削除
         result = re.sub(r'\s*,\s*$', '', result)  # 末尾のカンマを削除
         result = re.sub(r'\s+', ' ', result)  # 連続スペースを1つに
-        
-        print(f"[CharaSituation] {chara_name} + {sit_name} => {result}")
-        
+
+        if expanded_tags:
+            print(f"[CharaSituation] {' + '.join(expanded_tags)} => {result}")
+
         return result
+
+    def expand_character(self, chara, excludes):
+        """キャラクター定義を展開"""
+        if not isinstance(chara, dict):
+            return str(chara)
+
+        chara_parts = []
+
+        # キャラの各タグを処理
+        for key, value in chara.items():
+            if key not in excludes and value:
+                chara_parts.append(str(value))
+
+        return ", ".join(chara_parts)
+
+    def expand_situation(self, situation):
+        """シチュエーション定義を展開"""
+        if not isinstance(situation, dict):
+            return str(situation)
+
+        situation_parts = []
+        if situation.get("prompt"):
+            prompt_value = situation["prompt"]
+            # promptが配列の場合は結合、文字列の場合はそのまま
+            if isinstance(prompt_value, list):
+                situation_parts.extend(prompt_value)
+            else:
+                situation_parts.append(str(prompt_value))
+
+        return ", ".join(situation_parts)

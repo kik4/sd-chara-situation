@@ -28,13 +28,13 @@ git clone <repository-url> sd-chara-situation
 プロンプト欄に以下の形式で入力:
 
 ```
-@chara:キャラ名 @situation:状況名 その他のプロンプト
+@ファイル名:キー名 その他のプロンプト
 ```
 
 **例:**
 
 ```
-@chara:reimu @situation:beach masterpiece, best quality
+@characters:reimu @situations:beach masterpiece, best quality
 ```
 
 **生成されるプロンプト:**
@@ -43,31 +43,41 @@ git clone <repository-url> sd-chara-situation
 1girl, black hair, hair tubes, red eyes, medium breasts, bikini, barefoot, standing, wet, beach, ocean, sunny, outdoors, blue sky, masterpiece, best quality
 ```
 
+**仕組み:**
+- `@ファイル名:キー名` は `data/ファイル名.yaml` の指定されたキーを読み込みます
+- `@characters:reimu` → `data/characters.yaml` の `reimu` キーを読み込む
+- `@situations:beach` → `data/situations.yaml` の `beach` キーを読み込む
+- 任意のYAMLファイルを `data/` フォルダに追加して使用できます
+
 ### ランダム選択
 
-キャラクターや状況をランダムに選択できます。
+ファイル内のキーをランダムに選択できます。
 
 **状況をランダムに選択:**
 
 ```
-@chara:reimu @situation:random masterpiece, best quality
+@characters:reimu @situations:random masterpiece, best quality
 ```
 
 **キャラクターをランダムに選択:**
 
 ```
-@chara:random @situation:beach masterpiece, best quality
+@characters:random @situations:beach masterpiece, best quality
 ```
 
 **両方をランダムに選択:**
 
 ```
-@chara:random @situation:random masterpiece, best quality
+@characters:random @situations:random masterpiece, best quality
 ```
 
 **重要:** 同じ seed 値を使用すれば、常に同じキャラクターと状況の組み合わせが生成されます(再現性あり)。
 
 ## データファイルの編集
+
+### YAMLファイルの構造
+
+`data/` フォルダ内に任意のYAMLファイルを作成できます。ファイル名（拡張子なし）が `@ファイル名:キー名` の `ファイル名` 部分になります。
 
 ### キャラクター定義 (`data/characters.yaml`)
 
@@ -165,7 +175,9 @@ beach:
 - `maid`: 洋館(メイド服)
 - `casual`: 街中(カジュアル服)
 
-## キャラクターの追加
+## データの追加
+
+### キャラクターの追加
 
 `data/characters.yaml` に新しいキャラクターを追加できます:
 
@@ -181,7 +193,7 @@ your_character:
   body: large breasts
 ```
 
-## 状況の追加
+### 状況の追加
 
 `data/situations.yaml` に新しい状況を追加できます:
 
@@ -205,10 +217,33 @@ your_situation:
     - bottom
 ```
 
+### カスタムYAMLファイルの追加
+
+`data/` フォルダに独自のYAMLファイルを追加できます。
+
+**例: `data/effects.yaml` を作成:**
+
+```yaml
+fire:
+  prompt: fire, flames, glowing
+magical:
+  prompt: magical aura, sparkles, glowing particles
+```
+
+**使用例:**
+
+```
+@characters:reimu @situations:beach @effects:magical masterpiece, best quality
+```
+
+これにより、キャラクター、状況、エフェクトを組み合わせたプロンプトを生成できます。
+
 ## 動作仕様
 
 - YAML ファイルは毎回の生成時に読み込まれるため、編集後すぐに反映されます(WebUI の再起動不要)
-- 選択されたキャラクターと状況、展開されたプロンプトがコンソールにログとして出力されます
+- `@ファイル名:キー名` 形式で任意のYAMLファイルを参照できます
+- 複数のYAMLファイルを組み合わせて使用できます（例: キャラクター + 状況 + エフェクト）
+- 展開されたタグと最終プロンプトがコンソールにログとして出力されます
 - バッチ生成にも対応しています
 - 画像メタデータには展開後の完全なプロンプトが記録されます
 
