@@ -44,15 +44,22 @@ class CharaSituationScript(scripts.Script):
     def show(self, is_img2img):
         return scripts.AlwaysVisible
     
-    def process(self, p):
+    def process_batch(self, p, *args, **kwargs):
+        """
+        process_batchはseed値が確定した後に呼ばれるため、
+        -1が実際のseed値に置き換わった状態でプロンプトを展開できる
+        """
         self.load_data()
 
-        for i, prompt in enumerate(p.all_prompts):
+        for i, prompt in enumerate(p.prompts):
             # バッチ処理の場合、各プロンプトに対応するseedを取得
-            seed = p.all_seeds[i] if i < len(p.all_seeds) else p.seed
-            p.all_prompts[i] = self.expand_prompt(prompt, seed)
+            seed = p.all_seeds[i] if i < len(p.all_seeds) else p.all_seeds[0]
+            p.prompts[i] = self.expand_prompt(prompt, seed)
     
     def expand_prompt(self, prompt, seed):
+        # seedを使って決定的な乱数生成器を作成
+        rng = random.Random(seed)
+
         # @chara:name または @chara:random を検出
         chara_match = re.search(r'@chara:(\w+)', prompt)
         if not chara_match:
@@ -62,7 +69,6 @@ class CharaSituationScript(scripts.Script):
 
         # キャラクターのランダム選択
         if chara_name == "random":
-            rng = random.Random(seed)
             chara_name = rng.choice(list(self.characters.keys()))
 
         if chara_name not in self.characters:
@@ -79,8 +85,7 @@ class CharaSituationScript(scripts.Script):
         if sit_match:
             sit_name = sit_match.group(1)
             if sit_name == "random":
-                # seedを使って決定的にランダム選択
-                rng = random.Random(seed)
+                # 同じrngを使って次の選択を行う
                 sit_name = rng.choice(list(self.situations.keys()))
             
             if sit_name in self.situations:
