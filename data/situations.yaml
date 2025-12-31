@@ -1,0 +1,61 @@
+classroom:
+  prompt: classroom, school desk, indoors, window
+  extra: sitting, looking at viewer, school uniform
+  exclude:
+    - top
+    - bottom
+    - accessory
+
+beach:
+  prompt: beach, ocean, sunny, outdoors, blue sky
+  extra: bikini, barefoot, standing, wet
+  exclude:
+    - top
+    - bottom
+    - shoes
+    - accessory
+
+sleeping:
+  prompt: bedroom, bed, pillow, night, indoors
+  extra: sleeping, lying, closed eyes, pajamas
+  exclude:
+    - eye
+    - top
+    - bottom
+    - shoes
+    - accessory
+
+bath:
+  prompt: onsen, steam, water, rock, outdoors
+  extra: nude, wet, towel on head, sitting
+  exclude:
+    - top
+    - bottom
+    - shoes
+    - accessory
+
+bunny:
+  prompt: casino, spotlight, indoors, stage
+  extra: bunny suit, rabbit ears, pantyhose, high heels, wrist cuffs, standing
+  exclude:
+    - top
+    - bottom
+    - shoes
+    - accessory
+
+maid:
+  prompt: mansion, victorian interior, indoors
+  extra: maid dress, maid headdress, apron, standing, tray
+  exclude:
+    - top
+    - bottom
+    - accessory
+
+casual:
+  prompt: city street, outdoors, daytime
+  extra: t-shirt, jeans, sneakers, walking
+  exclude:
+    - top
+    - bottom
+    - shoes
+    - accessory

@@ -1,0 +1,1 @@
+# sd-chara-situation extension
