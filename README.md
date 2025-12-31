@@ -87,6 +87,8 @@ reimu:
 
 **要素の種類:**
 
+要素名は任意に設定できます。以下は推奨される例です:
+
 - `base`: 基本タグ (1girl, 1boy など)
 - `hair`: 髪型・髪色
 - `eye`: 目の色
@@ -95,6 +97,16 @@ reimu:
 - `shoes`: 履物
 - `accessory`: アクセサリ・小物
 - `body`: 体型
+
+**カスタム要素の追加:**
+
+必要に応じて独自の要素を追加できます。例:
+- `wings`: 翼の特徴
+- `tail`: 尻尾の特徴
+- `weapon`: 武器
+- `background_effect`: 背景エフェクト
+
+これらのカスタム要素も `situations.yaml` の `exclude` で除外できます。
 
 ### 状況定義 (`data/situations.yaml`)
 
