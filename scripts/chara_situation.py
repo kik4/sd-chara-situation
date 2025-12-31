@@ -54,7 +54,11 @@ class CharaSituationScript(scripts.Script):
         for i, prompt in enumerate(p.prompts):
             # バッチ処理の場合、各プロンプトに対応するseedを取得
             seed = p.all_seeds[i] if i < len(p.all_seeds) else p.all_seeds[0]
-            p.prompts[i] = self.expand_prompt(prompt, seed)
+            expanded = self.expand_prompt(prompt, seed)
+            p.prompts[i] = expanded
+            # all_promptsも更新して画像メタデータに反映
+            if i < len(p.all_prompts):
+                p.all_prompts[i] = expanded
     
     def expand_prompt(self, prompt, seed):
         # seedを使って決定的な乱数生成器を作成
@@ -93,40 +97,42 @@ class CharaSituationScript(scripts.Script):
             else:
                 print(f"[CharaSituation] Unknown situation: {sit_name}")
         
-        # プロンプト組み立て
-        parts = []
+        # キャラクタープロンプトの組み立て
+        chara_parts = []
         exclude = situation.get("exclude", []) if situation else []
-        
+
         # キャラの各タグを処理
         for key, value in chara.items():
             if key not in exclude and value:
-                parts.append(value)
-        
-        # シチュエーションの extra を追加
+                chara_parts.append(value)
+
+        chara_prompt = ", ".join(chara_parts)
+
+        # シチュエーションプロンプトの組み立て
+        situation_parts = []
         if situation:
             if situation.get("extra"):
-                parts.append(situation["extra"])
+                situation_parts.append(situation["extra"])
             if situation.get("prompt"):
-                parts.append(situation["prompt"])
-        
-        # 組み立て
-        replacement = ", ".join(parts)
-        
-        # @chara:xxx と @situation:xxx を置換
-        result = re.sub(r'@chara:\w+', '', prompt)
-        result = re.sub(r'@situation:\w+', '', result)
-        result = re.sub(r'^[\s,]+', '', result)
-        result = re.sub(r'[\s,]+$', '', result)
-        
-        # 置換したパーツを先頭に
-        if result:
-            result = f"{replacement}, {result}"
+                situation_parts.append(situation["prompt"])
+
+        situation_prompt = ", ".join(situation_parts) if situation_parts else ""
+
+        # @chara:xxx を実際のキャラクタープロンプトに置換
+        result = re.sub(r'@chara:\w+', chara_prompt, prompt)
+
+        # @situation:xxx を実際のシチュエーションプロンプトに置換
+        if situation_prompt:
+            result = re.sub(r'@situation:\w+', situation_prompt, result)
         else:
-            result = replacement
-        
-        # 連続カンマを整理
+            # situationが指定されていない場合は@situation:xxxを削除
+            result = re.sub(r'@situation:\w+', '', result)
+
+        # 連続カンマやスペースを整理
         result = re.sub(r',\s*,+', ',', result)
-        result = re.sub(r'\s+', ' ', result)
+        result = re.sub(r'^\s*,\s*', '', result)  # 先頭のカンマを削除
+        result = re.sub(r'\s*,\s*$', '', result)  # 末尾のカンマを削除
+        result = re.sub(r'\s+', ' ', result)  # 連続スペースを1つに
         
         print(f"[CharaSituation] {chara_name} + {sit_name} => {result}")
         
