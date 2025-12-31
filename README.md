@@ -43,13 +43,29 @@ git clone <repository-url> sd-chara-situation
 1girl, black hair, hair tubes, red eyes, medium breasts, bikini, barefoot, standing, wet, beach, ocean, sunny, outdoors, blue sky, masterpiece, best quality
 ```
 
-### ランダムな状況
+### ランダム選択
 
-状況をランダムに選択したい場合は `@situation:random` を使用:
+キャラクターや状況をランダムに選択できます。
+
+**状況をランダムに選択:**
 
 ```
 @chara:reimu @situation:random masterpiece, best quality
 ```
+
+**キャラクターをランダムに選択:**
+
+```
+@chara:random @situation:beach masterpiece, best quality
+```
+
+**両方をランダムに選択:**
+
+```
+@chara:random @situation:random masterpiece, best quality
+```
+
+**重要:** 同じ seed 値を使用すれば、常に同じキャラクターと状況の組み合わせが生成されます(再現性あり)。
 
 ## データファイルの編集
 

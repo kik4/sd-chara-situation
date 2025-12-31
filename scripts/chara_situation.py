@@ -53,12 +53,18 @@ class CharaSituationScript(scripts.Script):
             p.all_prompts[i] = self.expand_prompt(prompt, seed)
     
     def expand_prompt(self, prompt, seed):
-        # @chara:name を検出
+        # @chara:name または @chara:random を検出
         chara_match = re.search(r'@chara:(\w+)', prompt)
         if not chara_match:
             return prompt
 
         chara_name = chara_match.group(1)
+
+        # キャラクターのランダム選択
+        if chara_name == "random":
+            rng = random.Random(seed)
+            chara_name = rng.choice(list(self.characters.keys()))
+
         if chara_name not in self.characters:
             print(f"[CharaSituation] Unknown character: {chara_name}")
             return prompt
