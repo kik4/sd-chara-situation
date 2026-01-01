@@ -95,6 +95,37 @@ reimu:
   body: medium breasts
 ```
 
+**配列形式のサポート:**
+
+各要素の値は文字列だけでなく、配列でも指定できます。配列で指定した場合、自動的にカンマで結合されます:
+
+```yaml
+alice:
+  base: 1girl
+  hair:
+    - blonde hair
+    - short hair
+    - blue ribbon
+  eye: blue eyes
+  outfit:
+    - blue dress
+    - white apron
+    - hairband
+  body: medium breasts
+```
+
+この定義は以下と同等です:
+```yaml
+alice:
+  base: 1girl
+  hair: blonde hair, short hair, blue ribbon
+  eye: blue eyes
+  outfit: blue dress, white apron, hairband
+  body: medium breasts
+```
+
+配列形式を使うと、複数のタグを見やすく整理できます。
+
 **要素の種類:**
 
 要素名は任意に設定できます。以下は推奨される例です:

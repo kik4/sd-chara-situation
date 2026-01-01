@@ -180,7 +180,11 @@ class CharaSituationScript(scripts.Script):
         # キャラの各タグを処理（excludeに含まれないものを出力）
         for key, value in chara.items():
             if key not in excludes and value:
-                chara_parts.append(str(value))
+                # valueが配列の場合は結合、文字列の場合はそのまま
+                if isinstance(value, list):
+                    chara_parts.append(", ".join(str(v) for v in value))
+                else:
+                    chara_parts.append(str(value))
 
         return ", ".join(chara_parts)
 
@@ -194,7 +198,11 @@ class CharaSituationScript(scripts.Script):
         # キャラの各タグを処理（includeに含まれるもののみ出力）
         for key, value in chara.items():
             if key in includes and value:
-                chara_parts.append(str(value))
+                # valueが配列の場合は結合、文字列の場合はそのまま
+                if isinstance(value, list):
+                    chara_parts.append(", ".join(str(v) for v in value))
+                else:
+                    chara_parts.append(str(value))
 
         return ", ".join(chara_parts)
 
