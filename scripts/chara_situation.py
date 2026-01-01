@@ -183,10 +183,9 @@ class CharaSituationScript(scripts.Script):
             # タグを展開された内容で置換
             result = result.replace(full_tag, expanded, 1)
 
-        # 連続カンマやスペースを整理（改行は保持）
+        # 連続カンマやスペースを整理（改行と行末のカンマは保持）
         result = re.sub(r',[ \t]*,+', ',', result)  # 連続カンマを1つに
         result = re.sub(r'^[ \t]*,[ \t]*', '', result, flags=re.MULTILINE)  # 各行の先頭のカンマを削除（改行は保持）
-        result = re.sub(r'[ \t]*,[ \t]*$', '', result, flags=re.MULTILINE)  # 各行の末尾のカンマを削除（改行は保持）
         result = re.sub(r'[ \t]+', ' ', result)  # 連続スペース（タブも含む）を1つのスペースに（改行は保持）
 
         if expanded_tags:
