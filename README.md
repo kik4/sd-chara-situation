@@ -269,6 +269,40 @@ magical:
 
 これにより、キャラクター、状況、エフェクトを組み合わせたプロンプトを生成できます。
 
+### サブディレクトリの使用
+
+`data/` フォルダの下にサブディレクトリを作成して、YAMLファイルを整理できます。
+
+**例: ディレクトリ構造:**
+
+```
+data/
+├── characters/
+│   ├── touhou.yaml
+│   ├── original.yaml
+│   └── vtuber.yaml
+├── situations/
+│   ├── outdoor.yaml
+│   └── indoor.yaml
+└── effects.yaml
+```
+
+**使用方法:**
+
+サブディレクトリを含むパスをスラッシュ（`/`）で指定します:
+
+```
+@characters/touhou:reimu @situations/outdoor:beach masterpiece, best quality
+```
+
+- `@characters/touhou:reimu` → `data/characters/touhou.yaml` の `reimu` キーを読み込む
+- `@situations/outdoor:beach` → `data/situations/outdoor.yaml` の `beach` キーを読み込む
+
+**利点:**
+- 大量のキャラクターや状況を作品・カテゴリ別に整理できます
+- ファイル名の衝突を避けられます
+- データの管理が容易になります
+
 ## 動作仕様
 
 - YAML ファイルは毎回の生成時に読み込まれるため、編集後すぐに反映されます(WebUI の再起動不要)

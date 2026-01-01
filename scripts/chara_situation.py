@@ -64,7 +64,8 @@ class CharaSituationScript(scripts.Script):
         rng = random.Random(seed)
 
         # @filename:key の形式をすべて検出
-        tag_pattern = r'@(\w+):(\w+)'
+        # filenameはサブディレクトリをサポートするため、パス区切り文字(/)を含む
+        tag_pattern = r'@([\w/]+):(\w+)'
         matches = list(re.finditer(tag_pattern, prompt))
 
         if not matches:
