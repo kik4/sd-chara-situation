@@ -19,8 +19,9 @@ sys.modules['modules'] = type(sys)('modules')
 sys.modules['modules.scripts'] = MockScripts()
 
 # Add scripts directory to path
-script_dir = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.join(script_dir, 'scripts'))
+test_dir = os.path.dirname(os.path.abspath(__file__))
+project_dir = os.path.dirname(test_dir)
+sys.path.insert(0, os.path.join(project_dir, 'scripts'))
 
 from chara_situation import CharaSituationScript
 
