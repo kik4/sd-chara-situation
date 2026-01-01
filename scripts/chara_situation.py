@@ -35,20 +35,44 @@ class CharaSituationScript(scripts.Script):
     
     def show(self, is_img2img):
         return scripts.AlwaysVisible
-    
+
+    def before_process_batch(self, p, *args, **kwargs):
+        """
+        before_process_batchはLORA抽出の前に呼ばれるため、ここでプロンプトを展開する
+        ただしseedはまだ確定していないので、seed=0で仮展開してLORAタグを抽出させる
+        """
+        # p.promptsがまだNoneの場合は何もしない（初期化前）
+        if p.prompts is None or len(p.prompts) == 0:
+            return
+
+        # 元のプロンプトを保存（LORA抽出前）
+        if not hasattr(p, 'chara_situation_original_prompts'):
+            p.chara_situation_original_prompts = p.prompts.copy()
+
+        # seed=0で仮展開してLORAタグを抽出させる
+        for i in range(len(p.prompts)):
+            expanded = self.expand_prompt(p.prompts[i], 0)
+            p.prompts[i] = expanded
+
     def process_batch(self, p, *args, **kwargs):
         """
         process_batchはseed値が確定した後に呼ばれるため、
-        -1が実際のseed値に置き換わった状態でプロンプトを展開できる
+        ここで正しいseedを使って再展開する（randomの再現性を保つため）
         """
+        # 元のプロンプトを取得（before_process_batch()で保存したもの）
+        if hasattr(p, 'chara_situation_original_prompts'):
+            original_prompts = p.chara_situation_original_prompts
+        else:
+            # フォールバック：all_promptsを使用
+            original_prompts = p.all_prompts if hasattr(p, 'all_prompts') else p.prompts
+
         for i in range(len(p.prompts)):
             # バッチ処理の場合、各プロンプトに対応するseedを取得
             seed = p.all_seeds[i] if i < len(p.all_seeds) else p.all_seeds[0]
 
-            # all_promptsを元に展開する（LORAタグなどが含まれている）
-            # p.promptsはWebUIによってLORAタグが抽出された後のプロンプト
-            if i < len(p.all_prompts):
-                source_prompt = p.all_prompts[i]
+            # 元のプロンプトから正しいseedで再展開
+            if i < len(original_prompts):
+                source_prompt = original_prompts[i]
             else:
                 source_prompt = p.prompts[i]
 
