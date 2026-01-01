@@ -73,6 +73,28 @@ git clone <repository-url> sd-chara-situation
 
 **重要:** 同じ seed 値を使用すれば、常に同じキャラクターと状況の組み合わせが生成されます(再現性あり)。
 
+### シンプルなキャラクター記述
+
+状況を指定せず、キャラクターのみを記述することもできます。これにより、よく使うキャラクターのプロンプトをテンプレートとして管理できます。
+
+**キャラクターのみを使用:**
+
+```
+@characters:reimu masterpiece, best quality
+```
+
+**生成されるプロンプト:**
+
+```
+1girl, black hair, hair tubes, red eyes, white blouse, red vest, red hakama, brown boots, hair ribbon, detached sleeves, yellow ascot, medium breasts, masterpiece, best quality
+```
+
+**利点:**
+- 長いキャラクタープロンプトを毎回入力する手間が省けます
+- キャラクターの設定を一箇所で管理できます
+- LORA タグなども含めて定義できます（例: `base: 1girl, <lora:character:0.8>`）
+- 複数のキャラクターバリエーションを簡単に切り替えられます
+
 ## データファイルの編集
 
 ### YAMLファイルの構造
