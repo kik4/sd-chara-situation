@@ -39,7 +39,7 @@ class CharaSituationScript(scripts.Script):
     def before_process_batch(self, p, *args, **kwargs):
         """
         before_process_batchはLORA抽出の前に呼ばれるため、ここでプロンプトを展開する
-        ただしseedはまだ確定していないので、seed=0で仮展開してLORAタグを抽出させる
+        この時点でseedは確定しているので、正しいseedで展開してLORAタグを抽出させる
         """
         # p.promptsがまだNoneの場合は何もしない（初期化前）
         if p.prompts is None or len(p.prompts) == 0:
@@ -49,9 +49,11 @@ class CharaSituationScript(scripts.Script):
         if not hasattr(p, 'chara_situation_original_prompts'):
             p.chara_situation_original_prompts = p.prompts.copy()
 
-        # seed=0で仮展開してLORAタグを抽出させる（ログは出力しない）
+        # 正しいseedで展開してLORAタグを抽出させる（ログは出力しない）
         for i in range(len(p.prompts)):
-            expanded = self.expand_prompt(p.prompts[i], 0, silent=True)
+            # before_process_batchの時点でp.all_seedsは確定している
+            seed = p.all_seeds[i] if i < len(p.all_seeds) else p.all_seeds[0]
+            expanded = self.expand_prompt(p.prompts[i], seed, silent=True)
             p.prompts[i] = expanded
 
     def process_batch(self, p, *args, **kwargs):
