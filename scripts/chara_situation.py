@@ -49,9 +49,9 @@ class CharaSituationScript(scripts.Script):
         if not hasattr(p, 'chara_situation_original_prompts'):
             p.chara_situation_original_prompts = p.prompts.copy()
 
-        # seed=0で仮展開してLORAタグを抽出させる
+        # seed=0で仮展開してLORAタグを抽出させる（ログは出力しない）
         for i in range(len(p.prompts)):
-            expanded = self.expand_prompt(p.prompts[i], 0)
+            expanded = self.expand_prompt(p.prompts[i], 0, silent=True)
             p.prompts[i] = expanded
 
     def process_batch(self, p, *args, **kwargs):
@@ -83,7 +83,7 @@ class CharaSituationScript(scripts.Script):
             if i < len(p.all_prompts):
                 p.all_prompts[i] = expanded
     
-    def expand_prompt(self, prompt, seed):
+    def expand_prompt(self, prompt, seed, silent=False):
         # seedを使って決定的な乱数生成器を作成
         rng = random.Random(seed)
 
@@ -188,7 +188,7 @@ class CharaSituationScript(scripts.Script):
         result = re.sub(r'^[ \t]*,[ \t]*', '', result, flags=re.MULTILINE)  # 各行の先頭のカンマを削除（改行は保持）
         result = re.sub(r'[ \t]+', ' ', result)  # 連続スペース（タブも含む）を1つのスペースに（改行は保持）
 
-        if expanded_tags:
+        if expanded_tags and not silent:
             print(f"[CharaSituation] {' + '.join(expanded_tags)} => {result}")
 
         return result
