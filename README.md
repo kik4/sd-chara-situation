@@ -73,6 +73,32 @@ git clone <repository-url> sd-chara-situation
 
 **重要:** 同じ seed 値を使用すれば、常に同じキャラクターと状況の組み合わせが生成されます(再現性あり)。
 
+### 複数キャラクター指定
+
+複数のキャラクターを同時に指定できます。複数指定した場合、すべてのキャラクターに同じ除外/包含ルールが適用されます。
+
+**2人のキャラクターを同じ状況に:**
+
+```
+@characters:reimu @characters:marisa @situations:beach masterpiece, best quality
+```
+
+**生成されるプロンプト:**
+
+```
+1girl, black hair, hair tubes, red eyes, medium breasts, 1girl, blonde hair, long hair, braid, side braid, yellow eyes, small breasts, bikini, barefoot, standing, wet, beach, ocean, sunny, outdoors, blue sky, masterpiece, best quality
+```
+
+**動作:**
+- 両方のキャラクターから`top`、`bottom`、`shoes`、`accessory`が除外されます
+- ビーチの状況に合った服装（`bikini`、`barefoot`など）が追加されます
+- すべてのキャラクターに対して同じフィルタリングルールが適用されます
+
+**利点:**
+- 複数キャラクターのシーンを簡単に生成できます
+- 状況に応じた矛盾のないプロンプトが自動生成されます
+- キャラクターごとに個別に除外指定する必要がありません
+
 ### シンプルなキャラクター記述
 
 状況を指定せず、キャラクターのみを記述することもできます。これにより、よく使うキャラクターのプロンプトをテンプレートとして管理できます。
